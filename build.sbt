@@ -4,7 +4,7 @@ lazy val root = project
   .in(file("."))
   .settings(
     name := "play-access-logs-to-metrics",
-    version := "0.1.0-SNAPSHOT",
+    version := "1.0.0",
 
     scalaVersion := scala3Version,
 

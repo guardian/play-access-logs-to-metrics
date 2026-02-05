@@ -26,7 +26,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
             {
                 functionName: `${appName}-${props.stage}`,
                 app: appName,
-                fileName: "lambda.zip",
+                fileName: "play-access-logs-to-metrics-assembly-0.1.0-SNAPSHOT.jar",
                 handler: "com.gu.alb.Handler.handle",
                 rules: this.stage === "PROD" ? [runDailyRule] : [],
                 monitoringConfiguration: {

@@ -51,7 +51,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
           "S3Bucket": {
             "Ref": "DistributionBucketName",
           },
-          "S3Key": "frontend/TEST/play-access-logs-to-metrics/lambda.zip",
+          "S3Key": "frontend/TEST/play-access-logs-to-metrics/play-access-logs-to-metrics-assembly-0.1.0-SNAPSHOT.jar",
         },
         "Environment": {
           "Variables": {
@@ -304,7 +304,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
                       {
                         "Ref": "DistributionBucketName",
                       },
-                      "/frontend/TEST/play-access-logs-to-metrics/lambda.zip",
+                      "/frontend/TEST/play-access-logs-to-metrics/play-access-logs-to-metrics-assembly-0.1.0-SNAPSHOT.jar",
                     ],
                   ],
                 },
