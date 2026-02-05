@@ -31,7 +31,7 @@ jobs:
       - run: yarn install && yarn build && yarn test && yarn run synth
         working-directory: cdk
       - name: Build with SBT
-        run: sbt clean test assembly
+        run: sbt clean scalafmtCheck test assembly
       - uses: guardian/actions-riff-raff@v4
         with:
           projectName: dotcom:play-access-logs-to-metrics
