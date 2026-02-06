@@ -66,8 +66,16 @@ class LogServiceImpl(
       )
     }
 
+    val endpoints = rules.map {
+      case route: Route =>
+        endpointAggregates
+          .find(_.playEndpoint == s"${route.verb} /${route.path}")
+          .getOrElse(EndpointAggregate(s"${route.verb} /${route.path}", 0))
+      case _ => throw new UnsupportedOperationException("Only Route rules are supported when calculating aggregates")
+    }
+
     LogAggregates(
       appIdentity = appIdentity,
       day = day,
-      endpoints = endpointAggregates
+      endpoints = endpoints
     )
