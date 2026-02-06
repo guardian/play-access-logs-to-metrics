@@ -2,6 +2,7 @@ package com.gu.alb.logs
 
 import com.gu.alb.athena.AthenaClient
 import com.gu.alb.models.{AppIdentity, EndpointAggregate, LogAggregates}
+import play.routes.compiler.{Include, Route, Rule}
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -9,7 +10,8 @@ import java.time.format.DateTimeFormatter
 trait LogService:
   def calculateAggregates(
       appIdentity: AppIdentity,
-      day: LocalDate
+      day: LocalDate,
+      rules: Seq[Rule]
   ): LogAggregates
 
 class LogServiceImpl(
@@ -18,33 +20,34 @@ class LogServiceImpl(
 
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
 
+  def rulesToSqlCaseStatement(rules: Seq[Rule]): Seq[String] =
+    rules
+      .map {
+        case Include(_, _) =>
+          throw new UnsupportedOperationException("Include rules are not supported in SQL case statement")
+        case route: Route =>
+          val parts = route.path.parts.map {
+            case play.routes.compiler.StaticPart(value)        => value
+            case play.routes.compiler.DynamicPart(_, regex, _) => regex // once parsed the dynamic part is a jvm regex
+          }
+          // we wrap the path regexp into a full URL regexp to avoid matching greedily
+          // ^https://[^/]+/ means the string needs to start with https, and we'll match anything that doesn't contain a slash
+          // in other words: we'll match the domain name
+          val regexp = s"^https://[^/]+/${parts.mkString}$$"
+          s"""WHEN regexp_like(request_url, '$regexp') THEN '${route.verb} /${route.path}'"""
+      }
+
   override def calculateAggregates(
       appIdentity: AppIdentity,
-      day: LocalDate
+      day: LocalDate,
+      rules: Seq[Rule]
   ): LogAggregates =
-    // TODO: Replace with real query
+    val sql_case_statements = rulesToSqlCaseStatement(rules).mkString("\n    ")
     val query =
       s"""
          |SELECT CASE
-         |    WHEN request_url LIKE '/assets/%' THEN 'GET /assets/*path'
-         |    WHEN request_url = '/_healthcheck' THEN 'GET /_healthcheck'
-         |    WHEN request_url = '/_fronts_cdn_healthcheck' THEN 'GET /_fronts_cdn_healthcheck'
-         |    WHEN request_url = '/_agentcontents' THEN 'GET /_agentcontents'
-         |    WHEN request_url LIKE '/container/count/%/offset/%/section/%/mf2.json' THEN 'GET /container/count/:count/offset/:offset/section/:section/mf2.json'
-         |    WHEN request_url LIKE '/container/count/%/offset/%/mf2.json' THEN 'GET /container/count/:count/offset/:offset/mf2.json'
-         |    WHEN request_url LIKE '/collection/%/rss' THEN 'GET /collection/*id/rss'
-         |    WHEN request_url LIKE '/container/use-layout/%.json' THEN 'GET /container/use-layout/*id.json'
-         |    WHEN request_url LIKE '/container/data/%.json' THEN 'GET /container/data/*id.json'
-         |    WHEN request_url LIKE '/container/%.json' THEN 'GET /container/*id.json'
-         |    WHEN request_url LIKE '%/show-more/%.json' THEN 'GET /*path/show-more/*id.json'
-         |    WHEN request_url LIKE '%/rss' THEN 'GET /*path/rss'
-         |    WHEN request_url LIKE '%/lite.json' THEN 'GET /*path/lite.json'
-         |    WHEN request_url LIKE '%.emailjson' THEN 'GET /*path.emailjson'
-         |    WHEN request_url LIKE '%.emailtxt' THEN 'GET /*path.emailtxt'
-         |    WHEN request_url LIKE '%.json' THEN 'GET /*path.json'
-         |    WHEN request_url LIKE '%/headline.txt' THEN 'GET /*path/headline.txt'
-         |    WHEN request_url = '/' THEN 'GET /'
-         |    ELSE 'GET /*path (catch-all)'
+         |    $sql_case_statements
+         |    ELSE 'UNMATCHED'
          |  END AS route_pattern,
          |  COUNT(*) AS request_count
          |FROM "gucdk_access_logs"."alb_access_logs"
