@@ -40,8 +40,8 @@ jobs:
           buildNumber: ${{ env.BUILD_NUMBER }}
           configPath: cdk/cdk.out/riff-raff.yaml
           contentDirectories: |
-            cfn-eu-west-1-frontend-play-access-logs-to-metrics:
+            cdk.out:
               - cdk/cdk.out/PlayAccessLogsToMetrics-euwest-1-CODE.template.json
               - cdk/cdk.out/PlayAccessLogsToMetrics-euwest-1-PROD.template.json
-            lambda-upload-eu-west-1-frontend-play-access-logs-to-metrics:
-              - target/scala-3.8.1/play-access-logs-to-metrics-assembly-0.1.0-SNAPSHOT.jar
+            play-access-logs-to-metrics:
+              - target/scala-3.8.1/play-access-logs-to-metrics-assembly-1.0.0.jar
