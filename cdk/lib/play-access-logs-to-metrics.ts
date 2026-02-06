@@ -27,7 +27,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
                 functionName: `${appName}-${props.stage}`,
                 app: appName,
                 fileName: "play-access-logs-to-metrics-assembly-1.0.0.jar",
-                handler: "com.gu.alb.Handler.handle",
+                handler: "com.gu.alb.Handler::handle",
                 rules: this.stage === "PROD" ? [runDailyRule] : [],
                 monitoringConfiguration: {
                     snsTopicName: snsTopic.topicName,
@@ -38,7 +38,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
                     numberOfEvaluationPeriodsAboveThresholdBeforeAlarm: 1,
                     datapointsToAlarm: 1,
                 },
-                runtime: Runtime.NODEJS_24_X,
+                runtime: Runtime.JAVA_21,
                 environment: {
                     STAGE: props.stage,
                 },

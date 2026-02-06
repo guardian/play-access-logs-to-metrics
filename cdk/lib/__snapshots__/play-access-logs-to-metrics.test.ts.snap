@@ -61,18 +61,18 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
           },
         },
         "FunctionName": "play-access-logs-to-metrics-TEST",
-        "Handler": "com.gu.alb.Handler.handle",
+        "Handler": "com.gu.alb.Handler::handle",
         "LoggingConfig": {
           "LogFormat": "JSON",
         },
-        "MemorySize": 512,
+        "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
             "PlayAccessLogsToMetricsLambdaServiceRole21038829",
             "Arn",
           ],
         },
-        "Runtime": "nodejs24.x",
+        "Runtime": "java21",
         "Tags": [
           {
             "Key": "App",
