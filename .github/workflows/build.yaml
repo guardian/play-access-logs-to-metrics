@@ -2,14 +2,24 @@ name: Build on PR
 
 on:
   push:
-    branches: ['main']
+    branches: [ 'main' ]
   pull_request:
-    branches: ['main']
-  workflow_dispatch: {}
+    branches: [ 'main' ]
+  workflow_dispatch: { }
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS Security Token Service (STS)
+      # See https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
+      id-token: write
+
+      # Required for `actions/checkout`
+      contents: read
+
+      # Required to comment on a pull request
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
       - uses: guardian/setup-scala@v1
