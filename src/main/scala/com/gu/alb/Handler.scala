@@ -2,7 +2,7 @@ package com.gu.alb
 
 import com.gu.alb.athena.AthenaClientImpl
 import com.gu.alb.config.{Config, LambdaConfig}
-import com.gu.alb.logs.LogServiceImpl
+import com.gu.alb.logs.{LogService, LogServiceImpl}
 import com.gu.alb.models.AppIdentity
 import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser
@@ -22,7 +22,7 @@ class Handler:
     val routesFetcher = new RoutesFetcherImpl()
     process(config, logService, routesFetcher)
 
-  def process(config: LambdaConfig, logService: LogServiceImpl, routesFetcher: RoutesFetcherImpl): Unit =
+  def process(config: LambdaConfig, logService: LogService, routesFetcher: RoutesFetcher): Unit =
     config.apps.foreach(appConfig =>
       val day = LocalDate.now().minusDays(1)
       logger.info(
