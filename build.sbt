@@ -8,6 +8,7 @@ lazy val root = project
 
     scalaVersion := scala3Version,
 
+    libraryDependencies += "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
     libraryDependencies += "software.amazon.awssdk" % "athena" % "2.41.22",
     libraryDependencies += "software.amazon.awssdk" % "cloudwatch" % "2.41.22",
     libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.17",

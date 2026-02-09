@@ -9,6 +9,8 @@ import java.time.LocalDate
 
 class HandlerSuite extends munit.FunSuite with Stubs:
 
+  private val day = LocalDate.of(2026, 1, 19)
+
   // Helper to create a static route (e.g., GET /_healthcheck)
   private def staticRoute(verb: String, path: String): Route =
     Route(
@@ -44,11 +46,11 @@ class HandlerSuite extends munit.FunSuite with Stubs:
     )
 
     val handler = Handler()
-    handler.process(config, mockLogService, mockRoutesFetcher, cloudwatchClient)
+    handler.process(day, config, mockLogService, mockRoutesFetcher, cloudwatchClient)
 
     assertEquals(mockLogService.calculateAggregates.times, 1)
     assertEquals(mockLogService.calculateAggregates.calls.head._1, AppIdentity("facia", "frontend", "PROD"))
-    assertEquals(mockLogService.calculateAggregates.calls.head._2, LocalDate.now().minusDays(1))
+    assertEquals(mockLogService.calculateAggregates.calls.head._2, day)
     assertEquals(mockLogService.calculateAggregates.calls.head._3.length, 1)
   }
 
@@ -74,7 +76,7 @@ class HandlerSuite extends munit.FunSuite with Stubs:
     )
 
     val handler = Handler()
-    handler.process(config, mockLogService, mockRoutesFetcher, cloudwatchClient)
+    handler.process(day, config, mockLogService, mockRoutesFetcher, cloudwatchClient)
 
     assertEquals(mockLogService.calculateAggregates.times, 3)
   }
