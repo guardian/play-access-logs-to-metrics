@@ -4,6 +4,8 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuParameter",
+      "GuParameter",
       "GuDistributionBucketParameter",
       "GuScheduledLambda",
       "GuLambdaErrorPercentageAlarm",
@@ -14,6 +16,16 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
     "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "athenaOutputBucketParam": {
+      "Default": "/TEST/frontend/play-access-logs-to-metrics/athenaOutputBucket",
+      "Description": "The S3 location where Athena query results should be stored, e.g. s3://aws-frontend-logs/athena-output/",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "playAccessLogsConfigParam": {
+      "Default": "/TEST/frontend/play-access-logs-to-metrics/inputConfig",
+      "Description": "The JSON encoded configuration, containing which route file for which app to process",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
@@ -56,6 +68,21 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
         "Environment": {
           "Variables": {
             "APP": "play-access-logs-to-metrics",
+            "ATHENA_OUTPUT_LOCATION": {
+              "Fn::Join": [
+                "",
+                [
+                  "s3://",
+                  {
+                    "Ref": "athenaOutputBucketParam",
+                  },
+                  "/athena-output/",
+                ],
+              ],
+            },
+            "PLAY_ACCESS_LOGS_CONFIG": {
+              "Ref": "playAccessLogsConfigParam",
+            },
             "STACK": "frontend",
             "STAGE": "TEST",
           },
@@ -346,8 +373,29 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::aws-frontend-logs",
-                "arn:aws:s3:::aws-frontend-logs/athena-output/*",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "athenaOutputBucketParam",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "athenaOutputBucketParam",
+                      },
+                      "/athena-output/*",
+                    ],
+                  ],
+                },
               ],
               "Sid": "S3OutputLocation",
             },
