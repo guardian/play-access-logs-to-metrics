@@ -88,7 +88,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
           },
         },
         "FunctionName": "play-access-logs-to-metrics-TEST",
-        "Handler": "com.gu.alb.Handler::handle",
+        "Handler": "com.gu.alb.Handler::handleRequest",
         "LoggingConfig": {
           "LogFormat": "JSON",
         },

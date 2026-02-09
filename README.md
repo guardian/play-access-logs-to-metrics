@@ -42,3 +42,16 @@ The lambda is configured through two SSM properties in your account:
 }
 ```
 
+### Running locally
+
+`sbt run` will simply run the `LocalRun` class, which is for the purpose of testing locally
+
+### Running for a specific day:
+
+Pass this as the input of the lambda:
+
+```json
+{
+  "date": "2026-01-01"
+}
+```

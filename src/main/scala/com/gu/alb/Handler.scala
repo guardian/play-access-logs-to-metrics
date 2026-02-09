@@ -1,18 +1,24 @@
 package com.gu.alb
 
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.gu.alb.models.AppIdentity
 import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Map as JMap
 import scala.jdk.CollectionConverters.*
 
-class Handler:
+class Handler extends RequestHandler[JMap[String, String], Unit]:
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-  def handle(envVars: Map[String, String] = System.getenv().asScala.toMap): Unit =
+  protected def envVars: Map[String, String] = System.getenv().asScala.toMap
+
+  override def handleRequest(input: JMap[String, String], context: Context): Unit =
     val config = Config.load(envVars)
 
     val credentials: AwsCredentialsProvider = DefaultCredentialsProvider
@@ -24,16 +30,22 @@ class Handler:
     val routesFetcher = new RoutesFetcherImpl()
     val cloudwatchClient = new CloudwatchClientImpl(credentials)
 
-    process(config, logService, routesFetcher, cloudwatchClient)
+    val day: LocalDate = input.asScala
+      .get("day")
+      .map(dateFormatter.parse)
+      .map(LocalDate.from)
+      .getOrElse(LocalDate.now().minusDays(1))
+
+    process(day, config, logService, routesFetcher, cloudwatchClient)
 
   def process(
+      day: LocalDate,
       config: LambdaConfig,
       logService: LogService,
       routesFetcher: RoutesFetcher,
       cloudwatchClient: CloudwatchClient
   ): Unit =
     config.apps.foreach(appConfig =>
-      val day = LocalDate.now().minusDays(1)
       logger.info(
         s"Processing app: ${appConfig.app}, stack: ${appConfig.stack}, stage: ${appConfig.stage}, for day: $day"
       )
