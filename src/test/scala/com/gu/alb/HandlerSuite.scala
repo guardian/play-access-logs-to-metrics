@@ -1,7 +1,5 @@
 package com.gu.alb
 
-import com.gu.alb.config.{AppsConfig, LambdaConfig}
-import com.gu.alb.logs.LogService
 import com.gu.alb.models.{AppIdentity, LogAggregates}
 import org.scalamock.stubs.Stubs
 import play.routes.compiler.*
