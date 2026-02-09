@@ -1,4 +1,4 @@
-package com.gu.alb.athena
+package com.gu.alb
 
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
 import software.amazon.awssdk.regions.Region

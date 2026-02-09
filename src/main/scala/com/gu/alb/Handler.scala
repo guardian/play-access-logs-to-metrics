@@ -1,8 +1,5 @@
 package com.gu.alb
 
-import com.gu.alb.athena.AthenaClientImpl
-import com.gu.alb.config.{Config, LambdaConfig}
-import com.gu.alb.logs.{LogService, LogServiceImpl}
 import com.gu.alb.models.AppIdentity
 import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser

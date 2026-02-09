@@ -1,6 +1,6 @@
-package com.gu.alb.logs
+package com.gu.alb
 
-import com.gu.alb.athena.AthenaClient
+import com.gu.alb.AthenaClient
 import com.gu.alb.models.{AppIdentity, EndpointAggregate, LogAggregates}
 import play.routes.compiler.{Include, Route, Rule}
 

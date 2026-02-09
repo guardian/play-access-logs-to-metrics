@@ -1,7 +1,7 @@
-package com.gu.alb.logs
+package com.gu.alb
 
-import com.gu.alb.athena.AthenaClient
 import com.gu.alb.models.{AppIdentity, EndpointAggregate}
+import com.gu.alb.{AthenaClient, LogServiceImpl}
 import play.routes.compiler.*
 import software.amazon.awssdk.services.athena.model.{Datum, Row}
 
@@ -31,13 +31,18 @@ class LogServiceSuite extends munit.FunSuite:
   private def mockAthenaClient(results: (String, Long)*): AthenaClient =
     new AthenaClient:
       override def executeQuery[A](query: String)(parseRow: Row => A): Seq[A] =
-        results.map { (route, count) =>
-          Row.builder().data(
-            Datum.builder().varCharValue(route).build(),
-            Datum.builder().varCharValue(count.toString).build()
-          ).build()
-        }.map(parseRow)
-  
+        results
+          .map { (route, count) =>
+            Row
+              .builder()
+              .data(
+                Datum.builder().varCharValue(route).build(),
+                Datum.builder().varCharValue(count.toString).build()
+              )
+              .build()
+          }
+          .map(parseRow)
+
   test("rulesToSqlCaseStatement - static GET route") {
     val logService = LogServiceImpl(null) // AthenaClient not needed for this test
     val route = staticRoute("GET", "_healthcheck")
@@ -145,12 +150,13 @@ class LogServiceSuite extends munit.FunSuite:
     }
   }
 
-  
   test("calculateAggregates - matching routes return correct counts") {
-    val logService = LogServiceImpl(mockAthenaClient(
-      "GET /_healthcheck" -> 100L,
-      "POST /submit" -> 50L
-    ))
+    val logService = LogServiceImpl(
+      mockAthenaClient(
+        "GET /_healthcheck" -> 100L,
+        "POST /submit" -> 50L
+      )
+    )
     val appIdentity = AppIdentity("facia", "frontend", "PROD")
     val day = LocalDate.of(2026, 1, 29)
     val rules = Seq(

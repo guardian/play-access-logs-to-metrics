@@ -1,4 +1,4 @@
-package com.gu.alb.config
+package com.gu.alb
 
 import upickle.{ReadWriter, macroRW}
 
