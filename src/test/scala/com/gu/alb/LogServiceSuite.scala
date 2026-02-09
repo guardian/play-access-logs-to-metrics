@@ -169,8 +169,8 @@ class LogServiceSuite extends munit.FunSuite:
     assertEquals(result.appIdentity, appIdentity)
     assertEquals(result.day, day)
     assertEquals(result.endpoints.length, 2)
-    assertEquals(result.endpoints(0), EndpointAggregate("GET /_healthcheck", 100))
-    assertEquals(result.endpoints(1), EndpointAggregate("POST /submit", 50))
+    assertEquals(result.endpoints(0), EndpointAggregate("GET /_healthcheck", 100, "controllers.TestController.test"))
+    assertEquals(result.endpoints(1), EndpointAggregate("POST /submit", 50, "controllers.TestController.test"))
   }
 
   test("calculateAggregates - unmatched routes return count of 0") {
@@ -185,8 +185,11 @@ class LogServiceSuite extends munit.FunSuite:
     val result = logService.calculateAggregates(appIdentity, day, rules)
 
     assertEquals(result.endpoints.length, 2)
-    assertEquals(result.endpoints(0), EndpointAggregate("GET /_healthcheck", 100))
-    assertEquals(result.endpoints(1), EndpointAggregate("POST /submit", 0)) // Default to 0
+    assertEquals(result.endpoints(0), EndpointAggregate("GET /_healthcheck", 100, "controllers.TestController.test"))
+    assertEquals(
+      result.endpoints(1),
+      EndpointAggregate("POST /submit", 0, "controllers.TestController.test")
+    ) // Default to 0
   }
 
   test("calculateAggregates - generates correct SQL query") {

@@ -35,6 +35,8 @@ class HandlerSuite extends munit.FunSuite with Stubs:
     mockLogService.calculateAggregates returns { case (appId, day, rules) =>
       LogAggregates(appId, day, Seq.empty)
     }
+    val cloudwatchClient = stub[CloudwatchClient]
+    cloudwatchClient.pushAggregateMetrics.returns(_ => ())
 
     val config = LambdaConfig(
       apps = List(AppsConfig("facia", "frontend", "PROD", "https://example.com/routes")),
@@ -42,7 +44,7 @@ class HandlerSuite extends munit.FunSuite with Stubs:
     )
 
     val handler = Handler()
-    handler.process(config, mockLogService, mockRoutesFetcher)
+    handler.process(config, mockLogService, mockRoutesFetcher, cloudwatchClient)
 
     assertEquals(mockLogService.calculateAggregates.times, 1)
     assertEquals(mockLogService.calculateAggregates.calls.head._1, AppIdentity("facia", "frontend", "PROD"))
@@ -59,6 +61,9 @@ class HandlerSuite extends munit.FunSuite with Stubs:
       LogAggregates(appId, day, Seq.empty)
     }
 
+    val cloudwatchClient = stub[CloudwatchClient]
+    cloudwatchClient.pushAggregateMetrics.returns(_ => ())
+
     val config = LambdaConfig(
       apps = List(
         AppsConfig("facia", "frontend", "PROD", "https://example.com/routes1"),
@@ -69,7 +74,7 @@ class HandlerSuite extends munit.FunSuite with Stubs:
     )
 
     val handler = Handler()
-    handler.process(config, mockLogService, mockRoutesFetcher)
+    handler.process(config, mockLogService, mockRoutesFetcher, cloudwatchClient)
 
     assertEquals(mockLogService.calculateAggregates.times, 3)
   }

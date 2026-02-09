@@ -434,6 +434,12 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
               "Sid": "S3SourceDataRead",
             },
             {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
+              "Sid": "CloudWatchPutMetrics",
+            },
+            {
               "Action": [
                 "s3:GetObject*",
                 "s3:GetBucket*",

@@ -6,7 +6,8 @@ import java.time.LocalDate
 
 case class EndpointAggregate(
     playEndpoint: String,
-    requestCount: Long
+    requestCount: Long,
+    controllerMethod: String
 )
 
 case class LogAggregates(
