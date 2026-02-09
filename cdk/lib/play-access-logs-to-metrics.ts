@@ -97,6 +97,14 @@ export class PlayAccessLogsToMetrics extends GuStack {
                     `arn:aws:s3:::com-gu-${this.account}-load-balancer-access-logs-eu-west-1/*`,
                 ],
             }),
+            new PolicyStatement({
+                sid: "CloudWatchPutMetrics",
+                effect: Effect.ALLOW,
+                actions: [
+                    "cloudwatch:PutMetricData",
+                ],
+                resources: ["*"],
+            }),
         ]
 
         new GuScheduledLambda(

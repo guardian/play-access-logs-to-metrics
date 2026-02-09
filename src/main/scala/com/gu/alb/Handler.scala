@@ -3,6 +3,7 @@ package com.gu.alb
 import com.gu.alb.models.AppIdentity
 import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser
+import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
 
 import java.time.LocalDate
 import scala.jdk.CollectionConverters.*
@@ -14,12 +15,23 @@ class Handler:
   def handle(envVars: Map[String, String] = System.getenv().asScala.toMap): Unit =
     val config = Config.load(envVars)
 
-    val athenaClient = new AthenaClientImpl("gucdk_access_logs", config.athenaOutputLocation)
+    val credentials: AwsCredentialsProvider = DefaultCredentialsProvider
+      .builder()
+      .profileName("frontend")
+      .build()
+    val athenaClient = new AthenaClientImpl(credentials, "gucdk_access_logs", config.athenaOutputLocation)
     val logService = new LogServiceImpl(athenaClient)
     val routesFetcher = new RoutesFetcherImpl()
-    process(config, logService, routesFetcher)
+    val cloudwatchClient = new CloudwatchClientImpl(credentials)
 
-  def process(config: LambdaConfig, logService: LogService, routesFetcher: RoutesFetcher): Unit =
+    process(config, logService, routesFetcher, cloudwatchClient)
+
+  def process(
+      config: LambdaConfig,
+      logService: LogService,
+      routesFetcher: RoutesFetcher,
+      cloudwatchClient: CloudwatchClient
+  ): Unit =
     config.apps.foreach(appConfig =>
       val day = LocalDate.now().minusDays(1)
       logger.info(
@@ -37,5 +49,8 @@ class Handler:
 
       val appIdentity = AppIdentity(app = appConfig.app, stack = appConfig.stack, stage = appConfig.stage)
       val results = logService.calculateAggregates(appIdentity, day, rules)
+
+      cloudwatchClient.pushAggregateMetrics(results)
+
       logger.info(results.toString)
     )
