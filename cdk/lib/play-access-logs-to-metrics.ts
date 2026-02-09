@@ -117,7 +117,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
                     numberOfEvaluationPeriodsAboveThresholdBeforeAlarm: 1,
                     datapointsToAlarm: 1,
                 },
-                runtime: Runtime.JAVA_21,
+                runtime: Runtime.JAVA_25,
                 environment: {
                     STAGE: props.stage,
                     PLAY_ACCESS_LOGS_CONFIG: playAccessLogsConfigParam.valueAsString,

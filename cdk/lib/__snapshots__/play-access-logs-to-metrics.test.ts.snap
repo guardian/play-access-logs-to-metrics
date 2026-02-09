@@ -99,7 +99,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "java21",
+        "Runtime": "java25",
         "Tags": [
           {
             "Key": "App",
