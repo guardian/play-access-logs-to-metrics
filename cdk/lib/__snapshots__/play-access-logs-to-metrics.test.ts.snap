@@ -4,6 +4,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuParameter",
       "GuDistributionBucketParameter",
       "GuScheduledLambda",
       "GuLambdaErrorPercentageAlarm",
@@ -14,6 +15,11 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
     "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "athenaOutputBucketParam": {
+      "Default": "/TEST/frontend/play-access-logs-to-metrics/athenaOutputBucket",
+      "Description": "The S3 location where Athena query results should be stored, e.g. s3://my-bucket/athena-output/",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
@@ -269,6 +275,143 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
       "Properties": {
         "PolicyDocument": {
           "Statement": [
+            {
+              "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryExecution",
+                "athena:GetQueryResults",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:athena:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":workgroup/primary",
+                  ],
+                ],
+              },
+              "Sid": "AthenaQueryExecution",
+            },
+            {
+              "Action": [
+                "glue:GetDatabase",
+                "glue:GetTable",
+                "glue:GetPartitions",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":catalog",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/gucdk_access_logs",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/gucdk_access_logs/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "GlueCatalogAccess",
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "athenaOutputBucketParam",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "athenaOutputBucketParam",
+                      },
+                      "/athena-output/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "S3OutputLocation",
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::com-gu-",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      "-load-balancer-access-logs-eu-west-1",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::com-gu-",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      "-load-balancer-access-logs-eu-west-1/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "S3SourceDataRead",
+            },
             {
               "Action": [
                 "s3:GetObject*",
