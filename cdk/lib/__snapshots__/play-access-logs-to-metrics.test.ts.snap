@@ -271,6 +271,122 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
           "Statement": [
             {
               "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryExecution",
+                "athena:GetQueryResults",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:athena:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":workgroup/primary",
+                  ],
+                ],
+              },
+              "Sid": "AthenaQueryExecution",
+            },
+            {
+              "Action": [
+                "glue:GetDatabase",
+                "glue:GetTable",
+                "glue:GetPartitions",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":catalog",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/gucdk_access_logs",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:glue:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/gucdk_access_logs/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "GlueCatalogAccess",
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::aws-frontend-logs",
+                "arn:aws:s3:::aws-frontend-logs/athena-output/*",
+              ],
+              "Sid": "S3OutputLocation",
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::com-gu-",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      "-load-balancer-access-logs-eu-west-1",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::com-gu-",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      "-load-balancer-access-logs-eu-west-1/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "S3SourceDataRead",
+            },
+            {
+              "Action": [
                 "s3:GetObject*",
                 "s3:GetBucket*",
                 "s3:List*",
