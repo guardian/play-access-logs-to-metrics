@@ -1,0 +1,47 @@
+name: Build on PR
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
+  workflow_dispatch: { }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS Security Token Service (STS)
+      # See https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
+      id-token: write
+
+      # Required for `actions/checkout`
+      contents: read
+
+      # Required to comment on a pull request
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: guardian/setup-scala@v1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.13.0
+          cache: "yarn"
+          cache-dependency-path: "**/yarn.lock"
+      - run: yarn install && yarn build && yarn test && yarn run synth
+        working-directory: cdk
+      - name: Build with SBT
+        run: sbt clean test assembly
+      - uses: guardian/actions-riff-raff@v4
+        with:
+          projectName: dotcom:play-access-logs-to-metrics
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          buildNumber: ${{ env.BUILD_NUMBER }}
+          configPath: cdk/cdk.out/riff-raff.yaml
+          contentDirectories: |
+            cdk.out:
+              - cdk/cdk.out/PlayAccessLogsToMetrics-euwest-1-CODE.template.json
+              - cdk/cdk.out/PlayAccessLogsToMetrics-euwest-1-PROD.template.json
+            play-access-logs-to-metrics:
+              - target/scala-3.8.1/play-access-logs-to-metrics-assembly-1.0.0.jar
