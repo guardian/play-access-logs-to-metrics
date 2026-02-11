@@ -52,6 +52,6 @@ Pass this as the input of the lambda:
 
 ```json
 {
-  "date": "2026-01-01"
+  "day": "2026-01-01"
 }
 ```
