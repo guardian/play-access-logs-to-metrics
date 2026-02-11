@@ -116,6 +116,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
                 fileName: "play-access-logs-to-metrics-assembly-1.0.0.jar",
                 handler: "com.gu.alb.Handler::handleRequest",
                 rules: this.stage === "PROD" ? [runDailyRule] : [],
+                timeout: Duration.minutes(3),
                 monitoringConfiguration: {
                     snsTopicName: snsTopic.topicName,
                     toleratedErrorPercentage: 0,
