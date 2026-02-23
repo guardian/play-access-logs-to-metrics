@@ -11,6 +11,7 @@ lazy val root = project
     libraryDependencies += "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
     libraryDependencies += "software.amazon.awssdk" % "athena" % "2.41.22",
     libraryDependencies += "software.amazon.awssdk" % "cloudwatch" % "2.41.22",
+    libraryDependencies += "software.amazon.awssdk" % "ssm" % "2.41.22", // only used to run locally
     libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.17",
     libraryDependencies += "org.playframework" %% "play-routes-compiler" % "3.0.10",
     libraryDependencies += "com.squareup.okhttp3" % "okhttp" % "4.12.0",
