@@ -1,6 +1,6 @@
-package com.gu.alb.logs
+package com.gu.alb
 
-import com.gu.alb.athena.AthenaClient
+import com.gu.alb.AthenaClient
 import com.gu.alb.models.{AppIdentity, EndpointAggregate, LogAggregates}
 import play.routes.compiler.{Include, Route, Rule}
 
@@ -59,18 +59,17 @@ class LogServiceImpl(
          |ORDER BY request_count DESC
          |""".stripMargin
 
-    val endpointAggregates: Seq[EndpointAggregate] = athenaClient.executeQuery(query) { row =>
-      EndpointAggregate(
-        playEndpoint = row.data().get(0).varCharValue(),
-        requestCount = row.data().get(1).varCharValue().toLong
-      )
+    val endpointAggregates: Seq[(String, Long)] = athenaClient.executeQuery(query) { row =>
+      (row.data().get(0).varCharValue(), row.data().get(1).varCharValue().toLong)
     }
 
     val endpoints = rules.map {
       case route: Route =>
         endpointAggregates
-          .find(_.playEndpoint == s"${route.verb} /${route.path}")
-          .getOrElse(EndpointAggregate(s"${route.verb} /${route.path}", 0))
+          .find(_._1 == s"${route.verb} /${route.path}") match {
+          case Some((playEndpoint, requestCount)) => EndpointAggregate(playEndpoint, requestCount, route.call.toString)
+          case None => EndpointAggregate(s"${route.verb} /${route.path}", 0, route.call.toString)
+        }
       case _ => throw new UnsupportedOperationException("Only Route rules are supported when calculating aggregates")
     }
 

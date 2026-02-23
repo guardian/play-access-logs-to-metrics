@@ -22,7 +22,7 @@ class RoutesFetcherImpl extends RoutesFetcher:
       logger.debug("Created temporary file for routes: {}", tempFile.getAbsolutePath)
       tempFile.deleteOnExit()
       val body = response.body()
-      if (body != null) {
+      if body != null then {
         val source = body.source()
         val sink = okio.Okio.sink(tempFile)
         source.readAll(sink)

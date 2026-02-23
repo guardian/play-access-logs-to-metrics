@@ -1,6 +1,6 @@
-package com.gu.alb.athena
+package com.gu.alb
 
-import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaClient as AWSAthenaClient
 import software.amazon.awssdk.services.athena.model.*
@@ -11,13 +11,10 @@ trait AthenaClient:
   def executeQuery[A](query: String)(parseRow: Row => A): Seq[A]
 
 class AthenaClientImpl(
+    credentials: AwsCredentialsProvider,
     database: String,
     outputLocation: String
 ) extends AthenaClient:
-  private val credentials: AwsCredentialsProvider = DefaultCredentialsProvider
-    .builder()
-    .profileName("frontend")
-    .build()
 
   private val athenaClient: AWSAthenaClient = AWSAthenaClient
     .builder()

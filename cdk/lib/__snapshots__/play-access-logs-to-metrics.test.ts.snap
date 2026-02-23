@@ -5,6 +5,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuParameter",
+      "GuParameter",
       "GuDistributionBucketParameter",
       "GuScheduledLambda",
       "GuLambdaErrorPercentageAlarm",
@@ -20,6 +21,11 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
     "athenaOutputBucketParam": {
       "Default": "/TEST/frontend/play-access-logs-to-metrics/athenaOutputBucket",
       "Description": "The S3 location where Athena query results should be stored, e.g. s3://my-bucket/athena-output/",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "playAccessLogsConfigParam": {
+      "Default": "/TEST/frontend/play-access-logs-to-metrics/inputConfig",
+      "Description": "The JSON encoded configuration, containing which route file for which app to process",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
@@ -62,12 +68,27 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
         "Environment": {
           "Variables": {
             "APP": "play-access-logs-to-metrics",
+            "ATHENA_OUTPUT_LOCATION": {
+              "Fn::Join": [
+                "",
+                [
+                  "s3://",
+                  {
+                    "Ref": "athenaOutputBucketParam",
+                  },
+                  "/athena-output/",
+                ],
+              ],
+            },
+            "PLAY_ACCESS_LOGS_CONFIG": {
+              "Ref": "playAccessLogsConfigParam",
+            },
             "STACK": "frontend",
             "STAGE": "TEST",
           },
         },
         "FunctionName": "play-access-logs-to-metrics-TEST",
-        "Handler": "com.gu.alb.Handler::handle",
+        "Handler": "com.gu.alb.Handler::handleRequest",
         "LoggingConfig": {
           "LogFormat": "JSON",
         },
@@ -78,7 +99,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "java21",
+        "Runtime": "java25",
         "Tags": [
           {
             "Key": "App",
@@ -101,7 +122,7 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
             "Value": "TEST",
           },
         ],
-        "Timeout": 30,
+        "Timeout": 180,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -411,6 +432,12 @@ exports[`The PlayAccessLogsToMetrics stack matches the snapshot 1`] = `
                 },
               ],
               "Sid": "S3SourceDataRead",
+            },
+            {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
+              "Sid": "CloudWatchPutMetrics",
             },
             {
               "Action": [

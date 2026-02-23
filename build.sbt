@@ -8,11 +8,15 @@ lazy val root = project
 
     scalaVersion := scala3Version,
 
+    libraryDependencies += "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
     libraryDependencies += "software.amazon.awssdk" % "athena" % "2.41.22",
+    libraryDependencies += "software.amazon.awssdk" % "cloudwatch" % "2.41.22",
     libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.17",
     libraryDependencies += "com.typesafe.play" %% "routes-compiler" % "2.9.0-M6",
     libraryDependencies += "com.squareup.okhttp3" % "okhttp" % "4.12.0",
+    libraryDependencies += "com.lihaoyi" %% "upickle" % "4.4.2",
     libraryDependencies += "org.scalameta" %% "munit" % "1.2.2" % Test,
+    libraryDependencies += "org.scalamock" %% "scalamock" % "7.5.5" % Test,
 
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", "okio.kotlin_module")                 => MergeStrategy.first

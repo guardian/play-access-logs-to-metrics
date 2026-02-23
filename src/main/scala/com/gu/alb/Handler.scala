@@ -1,35 +1,68 @@
 package com.gu.alb
 
-import com.gu.alb.athena.AthenaClientImpl
-import com.gu.alb.logs.LogServiceImpl
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.gu.alb.models.AppIdentity
 import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser
+import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
 
-import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, ZoneId}
+import java.util.Map as JMap
+import scala.jdk.CollectionConverters.*
 
-class Handler:
+class Handler extends RequestHandler[JMap[String, String], Unit]:
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-  def handle(): Unit =
-    val athenaClient = new AthenaClientImpl("gucdk_access_logs", "s3://my-bucket/athena-output/")
+  protected def envVars: Map[String, String] = System.getenv().asScala.toMap
+
+  override def handleRequest(input: JMap[String, String], context: Context): Unit =
+    val config = Config.load(envVars)
+
+    val credentials: AwsCredentialsProvider = DefaultCredentialsProvider
+      .builder()
+      .profileName("frontend")
+      .build()
+    val athenaClient = new AthenaClientImpl(credentials, "gucdk_access_logs", config.athenaOutputLocation)
     val logService = new LogServiceImpl(athenaClient)
     val routesFetcher = new RoutesFetcherImpl()
+    val cloudwatchClient = new CloudwatchClientImpl(credentials)
 
-    val faciaRoutesFile = "https://raw.githubusercontent.com/guardian/frontend/refs/heads/main/facia/conf/routes"
-    val routesFile = routesFetcher.fetchRoutes(faciaRoutesFile)
-    logger.info(s"Fetched routes file to ${routesFile.getAbsolutePath}")
+    val day: LocalDate = input.asScala
+      .get("day")
+      .map(dateFormatter.parse)
+      .map(LocalDate.from)
+      .getOrElse(LocalDate.now(ZoneId.of("UTC")).minusDays(1))
 
-    val rules = RoutesFileParser.parse(routesFile) match
-      case Left(errors) =>
-        logger.error(s"Failed to parse routes file: ${errors.map(_.message).mkString(", ")}")
-        throw new RuntimeException("Failed to parse routes file")
-      case Right(rules) =>
-        logger.info(s"Successfully parsed routes file with ${rules.size} routes")
-        rules
+    process(day, config, logService, routesFetcher, cloudwatchClient)
 
-    val appIdentity = AppIdentity(app = "facia", stack = "frontend", stage = "PROD")
-    val day = LocalDate.of(2026, 1, 29)
-    val results = logService.calculateAggregates(appIdentity, day, rules)
-    logger.info(results.toString)
+  def process(
+      day: LocalDate,
+      config: LambdaConfig,
+      logService: LogService,
+      routesFetcher: RoutesFetcher,
+      cloudwatchClient: CloudwatchClient
+  ): Unit =
+    config.apps.foreach(appConfig =>
+      logger.info(
+        s"Processing app: ${appConfig.app}, stack: ${appConfig.stack}, stage: ${appConfig.stage}, for day: $day"
+      )
+
+      val routesFile = routesFetcher.fetchRoutes(appConfig.routesUrl)
+      val rules = RoutesFileParser.parse(routesFile) match
+        case Left(errors) =>
+          logger.error(s"Failed to parse routes file: ${errors.map(_.message).mkString(", ")}")
+          throw new RuntimeException("Failed to parse routes file")
+        case Right(rules) =>
+          logger.info(s"Successfully parsed routes file with ${rules.size} routes")
+          rules
+
+      val appIdentity = AppIdentity(app = appConfig.app, stack = appConfig.stack, stage = appConfig.stage)
+      val results = logService.calculateAggregates(appIdentity, day, rules)
+
+      cloudwatchClient.pushAggregateMetrics(results)
+
+      logger.info(results.toString)
+    )
