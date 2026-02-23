@@ -26,11 +26,14 @@ case class LambdaConfig(
 
 object Config:
   def load(envVars: Map[String, String]): LambdaConfig =
-    val rawConfig = Option(envVars("PLAY_ACCESS_LOGS_CONFIG"))
-      .getOrElse(throw new RuntimeException("Missing environment variable: PLAY_ACCESS_LOGS_CONFIG"))
-
-    val athenaOutputLocation = Option(envVars("ATHENA_OUTPUT_LOCATION"))
-      .getOrElse(throw new RuntimeException("Missing environment variable: ATHENA_OUTPUT_LOCATION"))
+    val rawConfig = envVars.getOrElse(
+      "PLAY_ACCESS_LOGS_CONFIG",
+      throw new RuntimeException("Missing environment variable: PLAY_ACCESS_LOGS_CONFIG")
+    )
+    val athenaOutputLocation = envVars.getOrElse(
+      "ATHENA_OUTPUT_LOCATION",
+      throw new RuntimeException("Missing environment variable: ATHENA_OUTPUT_LOCATION")
+    )
 
     val inputConfig = upickle.default.read[InputJsonConfig](rawConfig)
     LambdaConfig(
