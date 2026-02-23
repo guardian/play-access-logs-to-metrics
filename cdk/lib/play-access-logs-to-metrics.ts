@@ -1,16 +1,28 @@
-import type {GuStackProps} from "@guardian/cdk/lib/constructs/core";
-import {GuStack} from "@guardian/cdk/lib/constructs/core";
+import {GuParameter, GuStack, GuStackProps} from "@guardian/cdk/lib/constructs/core";
 import {App, Duration} from "aws-cdk-lib";
 import {GuScheduledLambda} from "@guardian/cdk";
 import {Schedule} from "aws-cdk-lib/aws-events";
 import {Topic} from "aws-cdk-lib/aws-sns";
 import {Runtime} from "aws-cdk-lib/aws-lambda";
+import {Effect, PolicyStatement} from "aws-cdk-lib/aws-iam";
 
 const appName = "play-access-logs-to-metrics";
 
 export class PlayAccessLogsToMetrics extends GuStack {
     constructor(scope: App, id: string, props: GuStackProps) {
         super(scope, id, props);
+
+        const athenaOutputBucketParam = new GuParameter(
+            this,
+            'athenaOutputBucketParam',
+            {
+                default: `/${this.stage}/${this.stack}/${appName}/athenaOutputBucket`,
+                fromSSM: true,
+                type: 'String',
+                description:
+                    'The S3 location where Athena query results should be stored, e.g. s3://my-bucket/athena-output/',
+            },
+        );
 
         const runDailyRule = {
             // 5am daily on weekdays
@@ -42,6 +54,60 @@ export class PlayAccessLogsToMetrics extends GuStack {
                 environment: {
                     STAGE: props.stage,
                 },
+                initialPolicy: [
+                    new PolicyStatement({
+                        sid: "AthenaQueryExecution",
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "athena:StartQueryExecution",
+                            "athena:GetQueryExecution",
+                            "athena:GetQueryResults",
+                        ],
+                        resources: [
+                            `arn:aws:athena:eu-west-1:${this.account}:workgroup/primary`,
+                        ],
+                    }),
+                    new PolicyStatement({
+                        sid: "GlueCatalogAccess",
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "glue:GetDatabase",
+                            "glue:GetTable",
+                            "glue:GetPartitions",
+                        ],
+                        resources: [
+                            `arn:aws:glue:eu-west-1:${this.account}:catalog`,
+                            `arn:aws:glue:eu-west-1:${this.account}:database/gucdk_access_logs`,
+                            `arn:aws:glue:eu-west-1:${this.account}:table/gucdk_access_logs/*`,
+                        ],
+                    }),
+                    new PolicyStatement({
+                        sid: "S3OutputLocation",
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "s3:GetBucketLocation",
+                            "s3:GetObject",
+                            "s3:ListBucket",
+                            "s3:PutObject",
+                        ],
+                        resources: [
+                            `arn:aws:s3:::${athenaOutputBucketParam.valueAsString}`,
+                            `arn:aws:s3:::${athenaOutputBucketParam.valueAsString}/athena-output/*`,
+                        ],
+                    }),
+                    new PolicyStatement({
+                        sid: "S3SourceDataRead",
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "s3:GetObject",
+                            "s3:ListBucket",
+                        ],
+                        resources: [
+                            `arn:aws:s3:::com-gu-${this.account}-load-balancer-access-logs-eu-west-1`,
+                            `arn:aws:s3:::com-gu-${this.account}-load-balancer-access-logs-eu-west-1/*`,
+                        ],
+                    }),
+                ],
             },
         );
     }
