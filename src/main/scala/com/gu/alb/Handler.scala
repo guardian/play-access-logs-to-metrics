@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory
 import play.routes.compiler.RoutesFileParser
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProvider, DefaultCredentialsProvider}
 
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, ZoneId}
 import java.util.Map as JMap
 import scala.jdk.CollectionConverters.*
 
@@ -34,7 +34,7 @@ class Handler extends RequestHandler[JMap[String, String], Unit]:
       .get("day")
       .map(dateFormatter.parse)
       .map(LocalDate.from)
-      .getOrElse(LocalDate.now().minusDays(1))
+      .getOrElse(LocalDate.now(ZoneId.of("UTC")).minusDays(1))
 
     process(day, config, logService, routesFetcher, cloudwatchClient)
 

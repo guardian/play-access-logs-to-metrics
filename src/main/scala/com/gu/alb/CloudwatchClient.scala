@@ -29,7 +29,7 @@ class CloudwatchClientImpl(
 
   override def pushAggregateMetrics(aggregates: LogAggregates): Unit = {
     // start of next day = end of current day
-    val metricTimestamp = aggregates.day.plusDays(1).atStartOfDay(ZoneId.of("Europe/London")).toInstant
+    val metricTimestamp = aggregates.day.plusDays(1).atStartOfDay(ZoneId.of("UTC")).toInstant
     val metricDatum = aggregates.endpoints.map { endpointAggregate =>
       // Convert EndpointAggregate to MetricDatum
       MetricDatum
