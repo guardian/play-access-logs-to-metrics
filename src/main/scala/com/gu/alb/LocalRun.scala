@@ -5,7 +5,8 @@ import scala.jdk.CollectionConverters.*
 object LocalRun:
   def main(args: Array[String]): Unit =
     val mockedEnvVars: Map[String, String] = Map(
-      "ATHENA_OUTPUT_LOCATION" -> "s3://not-a-bucket/athena-output/",
+      // replace with the S3 bucket relevant to your account: s3://<your-bucket-here>/athena-output/
+      "ATHENA_OUTPUT_LOCATION" -> "change-me",
       "PLAY_ACCESS_LOGS_CONFIG" ->
         """{
           |  "apps": [
