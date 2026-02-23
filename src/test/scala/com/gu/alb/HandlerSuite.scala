@@ -42,7 +42,7 @@ class HandlerSuite extends munit.FunSuite with Stubs:
 
     val config = LambdaConfig(
       apps = List(AppsConfig("facia", "frontend", "PROD", "https://example.com/routes")),
-      athenaOutputLocation = "s3://bucket/output"
+      athenaOutputLocation = "not-a-bucket"
     )
 
     val handler = Handler()
@@ -72,7 +72,7 @@ class HandlerSuite extends munit.FunSuite with Stubs:
         AppsConfig("mobile", "backend", "CODE", "https://example.com/routes2"),
         AppsConfig("article", "frontend", "PROD", "https://example.com/routes3")
       ),
-      athenaOutputLocation = "s3://bucket/output"
+      athenaOutputLocation = "still-not-a-bucket"
     )
 
     val handler = Handler()
