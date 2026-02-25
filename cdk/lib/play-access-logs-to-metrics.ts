@@ -1,7 +1,7 @@
 import {GuParameter, GuStack, GuStackProps} from "@guardian/cdk/lib/constructs/core";
 import {App, Duration} from "aws-cdk-lib";
 import {GuScheduledLambda} from "@guardian/cdk";
-import {Schedule} from "aws-cdk-lib/aws-events";
+import {RuleTargetInput, Schedule} from "aws-cdk-lib/aws-events";
 import {Topic} from "aws-cdk-lib/aws-sns";
 import {Runtime} from "aws-cdk-lib/aws-lambda";
 import {Effect, PolicyStatement} from "aws-cdk-lib/aws-iam";
@@ -40,6 +40,7 @@ export class PlayAccessLogsToMetrics extends GuStack {
             // 5am daily on weekdays
             schedule: Schedule.expression("cron(0 5 ? * MON-FRI *)"),
             description: "Daily run to process Play access logs and update metrics",
+            input: RuleTargetInput.fromObject({}),
         };
 
         const snsTopic = new Topic(this, "AbTestingNotificationSnsTopic");
