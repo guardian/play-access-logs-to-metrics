@@ -16,7 +16,7 @@ lazy val root = project
     libraryDependencies += "org.playframework" %% "play-routes-compiler" % "3.0.10",
     libraryDependencies += "com.squareup.okhttp3" % "okhttp" % "4.12.0",
     libraryDependencies += "com.lihaoyi" %% "upickle" % "4.4.2",
-    libraryDependencies += "org.scalameta" %% "munit" % "1.2.2" % Test,
+    libraryDependencies += "org.scalameta" %% "munit" % "1.2.3" % Test,
     libraryDependencies += "org.scalamock" %% "scalamock" % "7.5.5" % Test,
 
     assembly / assemblyMergeStrategy := {
