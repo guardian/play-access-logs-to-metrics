@@ -37,8 +37,8 @@ export class PlayAccessLogsToMetrics extends GuStack {
         );
 
         const runDailyRule = {
-            // 5am daily on weekdays
-            schedule: Schedule.expression("cron(0 5 ? * MON-FRI *)"),
+            // 5am daily
+            schedule: Schedule.expression("cron(0 5 ? * * *)"),
             description: "Daily run to process Play access logs and update metrics",
             input: RuleTargetInput.fromObject({}),
         };
