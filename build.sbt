@@ -15,7 +15,7 @@ lazy val root = project
     libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.17",
     libraryDependencies += "org.playframework" %% "play-routes-compiler" % "3.0.10",
     libraryDependencies += "com.squareup.okhttp3" % "okhttp" % "4.12.0",
-    libraryDependencies += "com.lihaoyi" %% "upickle" % "4.4.2",
+    libraryDependencies += "com.lihaoyi" %% "upickle" % "4.4.3",
     libraryDependencies += "org.scalameta" %% "munit" % "1.2.2" % Test,
     libraryDependencies += "org.scalamock" %% "scalamock" % "7.5.5" % Test,
 
