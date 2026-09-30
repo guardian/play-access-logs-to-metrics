@@ -17,7 +17,7 @@ lazy val root = project
     libraryDependencies += "com.squareup.okhttp3" % "okhttp" % "4.12.0",
     libraryDependencies += "com.lihaoyi" %% "upickle" % "4.4.3",
     libraryDependencies += "org.scalameta" %% "munit" % "1.2.4" % Test,
-    libraryDependencies += "org.scalamock" %% "scalamock" % "7.5.5" % Test,
+    libraryDependencies += "org.scalamock" %% "scalamock" % "7.6.0" % Test,
 
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", "okio.kotlin_module")                 => MergeStrategy.first
