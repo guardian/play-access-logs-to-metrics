@@ -21,7 +21,7 @@ jobs:
       # Required to comment on a pull request
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: guardian/setup-scala@v1
       - uses: actions/setup-node@v6
         with:
